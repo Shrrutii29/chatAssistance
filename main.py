@@ -104,15 +104,19 @@ def generate_answer(sql_query: str, sql_result: list,question : str, prompt_temp
     
     return response.text.strip() if response else "Couldnt generate an outcome."
   
+# Initialize FastAPI
 app = FastAPI()
 
+# Pydantic model for handling incoming question
 class Question(BaseModel):
     question: str
-    
+ 
+ # root endpoint   
 @app.get("/")
 def root():
-    return {"message" : "Welcome for chat assistance"}
+    return {"message" : "Welcome to chat assistance"}
 
+# endpoint to handle questions from user
 @app.post("/question")
 def question_handler(ques: Question):
     question=ques.question
