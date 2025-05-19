@@ -1,3 +1,5 @@
+# to run => uvicorn main:app --reload
+
 from dotenv import load_dotenv
 import os
 import google.generativeai as genai
@@ -13,12 +15,18 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 # load google gemini model
-model=genai.GenerativeModel("gemini-1.5-pro-latest")
+model=genai.GenerativeModel("gemini-1.5-flash")
 
 prompt=[
     """
-        You are an expert SQL assistant. Your task is to generate SQL queries on postgreSQL database based on natural language requests. The database name is defaultdb , which contains the following table:
-        daily_ads_data (brand_id int4, brand_name text, channel text, account_id int4, channel_campaign_id int4, campaign_name text, channel_ad_group_id int4, ad_group_name text, channel_ad_id int4, channel_asset_id int4, asset_type text, asset_source text, asset_height int4, asset_width int4, asset_orientation text, insights_date text, spend float4, clicks int4, impressions int4, channel_metrics text, gender text, offer_in_ad text, background_color text, audio_present text, person_status text, media_entities text, media_text_overlay text, ctr float4, cpc float4, cpm float4, cpa float4, cpp float4, roas float4, Cost/Registration float4, conversions float4, purchases float4, Purchase Value float4, atcs float4, leads float4, registrations float4, Page Likes float4)
+        You are an expert SQL assistant. Your task is to generate SQL queries on postgreSQL database based on natural language requests. The database name is defaultdb , which contains the following tables:
+        1. daily_ads_data (brand_id int4, brand_name text, channel text, account_id int4, channel_campaign_id int4, campaign_name text, channel_ad_group_id int4, ad_group_name text, channel_ad_id int4, channel_asset_id int4, asset_type text, asset_source text, asset_height int4, asset_width int4, asset_orientation text, insights_date text, spend float4, clicks int4, impressions int4, channel_metrics text, gender text, offer_in_ad text, background_color text, audio_present text, person_status text, media_entities text, media_text_overlay text, ctr float4, cpc float4, cpm float4, cpa float4, cpp float4, roas float4, Cost/Registration float4, conversions float4, purchases float4, Purchase Value float4, atcs float4, leads float4, registrations float4, Page Likes float4)
+        
+        2. test_table(id serial4, name varchar(100))
+        
+        3. customer(customer_id int4, name varchar(100), contact varchar(15), email varchar(100), address text)
+        
+        4. adscrypt_ads_demo(brand_id int4, source varchar(128), brand_name varchar(50), channel varchar(50), account_id int4, channel_compaign_id int4, channel_ad_group_id int4, channel_ad_id int4, channel_asset_id int4, asset_type varchar(50), asset_height varchar(50), asset_width varchar(50), asset_orientation varchar(50), insights_date varchar(50), spend float4, clicks int4, impressions int4, gender varchar(50), offer_in_ad varchar(64)), background_color varchar(50), audio_present bool, media_entities varchar(128), media_text_overlay varchar(512), ctr float4, cpc float4, cpm float4, cpa varchar(50), cpp varchar(50), roas float4, Cost/Registration float4, conversions int4, purchases int4, Purchase Value float4, atcs int4, leads int4, registrations int4, Page Likes int4, header_font_bucket varchar(50), header_font_color varchar(50) , header_font_color_hexcode varchar(50), header_font_proportion varchar(50), sub_header_font_bucket varchar(50), sub_header_font_color varchar(50), sub_header_font_color_hexcode varchar(50), sub_header_font_proportion varchar(50))
         
         Important to note - 
         1. Always assume that text fields may have inconsistent casing (eg., Google, google, GOOGLE).
@@ -50,6 +58,8 @@ models = genai.list_models()
 for model in models:
     print(model.name)
 '''
+
+
     
 # connect database
 def connect_database():
@@ -104,19 +114,15 @@ def generate_answer(sql_query: str, sql_result: list,question : str, prompt_temp
     
     return response.text.strip() if response else "Couldnt generate an outcome."
   
-# Initialize FastAPI
 app = FastAPI()
 
-# Pydantic model for handling incoming question
 class Question(BaseModel):
     question: str
- 
- # root endpoint   
+    
 @app.get("/")
 def root():
-    return {"message" : "Welcome to chat assistance"}
+    return {"message" : "Welcome to our chatbot"}
 
-# endpoint to handle questions from user
 @app.post("/question")
 def question_handler(ques: Question):
     question=ques.question
